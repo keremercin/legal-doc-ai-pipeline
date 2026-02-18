@@ -14,6 +14,7 @@ def test_qa_endpoint_returns_answer_and_citations() -> None:
     r = client.post("/v1/qa", json={"question": "What is the payment deadline?", "top_k": 3})
     assert r.status_code == 200
     body = r.json()
-    assert "answer" in body
-    assert "citations" in body
-    assert isinstance(body["citations"], list)
+    data = body["data"]
+    assert "answer" in data
+    assert "citations" in data
+    assert isinstance(data["citations"], list)

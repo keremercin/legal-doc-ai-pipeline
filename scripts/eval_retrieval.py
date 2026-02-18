@@ -2,6 +2,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
+from legal_doc_ai.api.response import APP_VERSION
 from legal_doc_ai.services.vector_store import InMemoryVectorStore
 
 
@@ -12,13 +13,13 @@ def reciprocal_rank(expected: str, ranked_labels: list[str]) -> float:
     return 0.0
 
 
-def write_report(metrics: dict[str, float], details: list[dict]) -> None:
+def write_report(metrics: dict[str, float], details: list[dict], total_queries: int) -> None:
     out_dir = Path("reports")
     out_dir.mkdir(parents=True, exist_ok=True)
-    path = out_dir / "benchmark.md"
 
     ts = datetime.now(timezone.utc).isoformat()
-    lines = [
+
+    benchmark_lines = [
         "# Retrieval Benchmark Report",
         "",
         f"Generated at: `{ts}`",
@@ -38,11 +39,29 @@ def write_report(metrics: dict[str, float], details: list[dict]) -> None:
     ]
     for row in details:
         labels = ", ".join(row["labels"]) if row["labels"] else "-"
-        lines.append(
+        benchmark_lines.append(
             f"| {row['query']} | {row['expected']} | {labels} | {int(row['hit1'])} |"
         )
 
-    path.write_text("\n".join(lines), encoding="utf-8")
+    (out_dir / "benchmark.md").write_text("\n".join(benchmark_lines), encoding="utf-8")
+
+    metrics_payload = {
+        "schema_version": "1.0",
+        "project": "legal-doc-ai-pipeline",
+        "model_version": APP_VERSION,
+        "generated_at": ts,
+        "dataset": {
+            "path": "data/eval/retrieval_eval.json",
+            "total_queries": total_queries,
+        },
+        "metrics": {
+            "recall_at_1": round(metrics["recall_at_1"], 4),
+            "recall_at_3": round(metrics["recall_at_3"], 4),
+            "mrr": round(metrics["mrr"], 4),
+        },
+        "details": details,
+    }
+    (out_dir / "metrics.json").write_text(json.dumps(metrics_payload, indent=2), encoding="utf-8")
 
 
 def main() -> None:
@@ -91,8 +110,8 @@ def main() -> None:
     print(f"Recall@3: {metrics['recall_at_3']:.2f}")
     print(f"MRR: {metrics['mrr']:.2f}")
 
-    write_report(metrics, details)
-    print("Report: reports/benchmark.md")
+    write_report(metrics, details, total_queries=len(queries))
+    print("Reports: reports/benchmark.md + reports/metrics.json")
 
 
 if __name__ == "__main__":

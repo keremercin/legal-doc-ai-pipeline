@@ -17,6 +17,6 @@ def test_audit_endpoint_after_actions() -> None:
     r_audit = client.get("/v1/audit", params={"limit": 10})
     assert r_audit.status_code == 200
     body = r_audit.json()
-    assert "events" in body
-    assert len(body["events"]) >= 2
-    assert body["events"][0]["action"] in {"retrieve", "ingest", "analyze", "extract", "qa"}
+    events = body["data"]["events"]
+    assert len(events) >= 2
+    assert events[0]["action"] in {"retrieve", "ingest", "analyze", "extract", "qa"}

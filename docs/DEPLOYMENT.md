@@ -1,34 +1,27 @@
 # Deployment Notes
 
-## Local
+## One-command local run
 
 ```bash
-cp .env.example .env
-# set OPENAI_API_KEY + RETRIEVER_BACKEND=pgvector
-
-docker compose up -d db
-python -m venv .venv
-source .venv/bin/activate
-pip install -e .
-uvicorn legal_doc_ai.main:app --host 0.0.0.0 --port 8000
+make install && make dev && make run-api
 ```
 
-## Production checklist
+This starts Postgres (`pgvector`) and serves API at `http://localhost:8000/docs`.
 
-- [ ] move secrets to environment manager (not `.env` in repo)
-- [ ] restrict CORS
-- [ ] add API auth
-- [ ] configure reverse proxy (Nginx/Caddy)
-- [ ] setup backups for Postgres
-- [ ] add structured logging + request IDs
+## Minimal production checklist
 
-## Docker run (API)
+- Move secrets to environment manager (not `.env` in repo)
+- Keep `X-API-Key` enabled for non-public endpoints
+- Configure reverse proxy + TLS
+- Enable database backups
+- Add structured logs and request-id tracing
+
+## Docker options
 
 ```bash
 docker build -t legal-doc-ai:latest .
 docker run --env-file .env -p 8000:8000 legal-doc-ai:latest
 ```
-
 
 ## Full stack compose
 
@@ -36,5 +29,5 @@ docker run --env-file .env -p 8000:8000 legal-doc-ai:latest
 docker compose up -d --build
 ```
 
-- API: http://localhost:8000/docs
-- UI: http://localhost:8501
+- API: `http://localhost:8000/docs`
+- UI: `http://localhost:8501`

@@ -9,5 +9,7 @@ def test_health() -> None:
     assert r.status_code == 200
     body = r.json()
     assert body["status"] == "ok"
-    assert "service" in body
-    assert "metadata" in body
+    assert "data" in body
+    assert "service" in body["data"]
+    assert "meta" in body
+    assert body["error"] is None

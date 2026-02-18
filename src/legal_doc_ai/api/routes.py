@@ -5,21 +5,15 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
 from legal_doc_ai.api.auth import require_api_key
+from legal_doc_ai.api.response import APP_VERSION, api_response
 from legal_doc_ai.config import get_settings
 from legal_doc_ai.core.pipeline import DocumentPipeline
 from legal_doc_ai.core.schemas import (
     AnalyzeRequest,
-    AnalyzeResponse,
     AuditEvent,
-    AuditListResponse,
     ExtractRequest,
-    ExtractResponse,
-    HealthResponse,
-    IngestResponse,
     QARequest,
-    QAResponse,
     RetrieveRequest,
-    RetrieveResponse,
     RetrievedChunk,
 )
 from legal_doc_ai.db import get_db, test_db_connection
@@ -43,25 +37,30 @@ def _resolve_store(db: Session):
     return memory_store
 
 
-@router.get("/health", response_model=HealthResponse)
-def health() -> HealthResponse:
+@router.get("/health")
+def health() -> dict:
     db_ok = test_db_connection()
-    return HealthResponse(
-        service=settings.app_name,
-        metadata={
+    return api_response(
+        data={
+            "service": settings.app_name,
             "retriever_backend": settings.retriever_backend,
             "db_connected": db_ok,
             "classifier_mode": settings.classifier_mode,
             "auth_enabled": bool(settings.api_key),
-        },
+        }
     )
 
 
-@router.post("/v1/ingest", response_model=IngestResponse, dependencies=[Depends(require_api_key)])
+@router.get("/version")
+def version() -> dict:
+    return api_response(data={"service": settings.app_name, "version": APP_VERSION})
+
+
+@router.post("/v1/ingest", dependencies=[Depends(require_api_key)])
 async def ingest_document(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
-) -> IngestResponse:
+) -> dict:
     suffix = Path(file.filename).suffix if file.filename else ".bin"
 
     with NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
@@ -85,16 +84,16 @@ async def ingest_document(
                 "chunk_count": result.get("chunk_count"),
             },
         )
-        return IngestResponse(**result)
+        return api_response(data=result)
     finally:
         temp_path.unlink(missing_ok=True)
 
 
-@router.post("/v1/retrieve", response_model=RetrieveResponse, dependencies=[Depends(require_api_key)])
+@router.post("/v1/retrieve", dependencies=[Depends(require_api_key)])
 def retrieve(
     req: RetrieveRequest,
     db: Session = Depends(get_db),
-) -> RetrieveResponse:
+) -> dict:
     store = _resolve_store(db)
     hits = store.search(query=req.query, top_k=req.top_k)
     audit.log(
@@ -102,51 +101,52 @@ def retrieve(
         "ok",
         {"query": req.query[:120], "top_k": req.top_k, "result_count": len(hits)},
     )
-    return RetrieveResponse(
-        query=req.query,
-        results=[
+    result = {
+        "query": req.query,
+        "results": [
             RetrievedChunk(
                 chunk_id=item.chunk_id,
                 score=float(item.score),
                 text=item.text,
                 metadata=item.metadata,
-            )
+            ).model_dump()
             for item in hits
         ],
-    )
+    }
+    return api_response(data=result)
 
 
-@router.post("/v1/extract", response_model=ExtractResponse, dependencies=[Depends(require_api_key)])
-def extract_entities(req: ExtractRequest) -> ExtractResponse:
+@router.post("/v1/extract", dependencies=[Depends(require_api_key)])
+def extract_entities(req: ExtractRequest) -> dict:
     entities = extractor.extract(req.text)
     audit.log("extract", "ok", {"text_len": len(req.text)})
-    return ExtractResponse(entities=entities)
+    return api_response(data={"entities": entities})
 
 
-@router.post("/v1/analyze", response_model=AnalyzeResponse, dependencies=[Depends(require_api_key)])
-def analyze_text(req: AnalyzeRequest) -> AnalyzeResponse:
+@router.post("/v1/analyze", dependencies=[Depends(require_api_key)])
+def analyze_text(req: AnalyzeRequest) -> dict:
     out = analyzer.analyze(req.text)
     audit.log(
         "analyze",
         "ok",
         {"classification": out.get("classification"), "risk_flags": len(out.get("risk_flags", []))},
     )
-    return AnalyzeResponse(**out)
+    return api_response(data=out)
 
 
-@router.post("/v1/qa", response_model=QAResponse, dependencies=[Depends(require_api_key)])
+@router.post("/v1/qa", dependencies=[Depends(require_api_key)])
 def answer_question(
     req: QARequest,
     db: Session = Depends(get_db),
-) -> QAResponse:
+) -> dict:
     store = _resolve_store(db)
     qa = QAGenerator(store)
     out = qa.answer(req.question, top_k=req.top_k)
     audit.log("qa", "ok", {"question": req.question[:120], "citations": len(out.get("citations", []))})
-    return QAResponse(**out)
+    return api_response(data=out)
 
 
-@router.get("/v1/audit", response_model=AuditListResponse, dependencies=[Depends(require_api_key)])
-def get_audit(limit: int = 50) -> AuditListResponse:
-    events = [AuditEvent(**e) for e in audit.list_events(limit=limit)]
-    return AuditListResponse(events=events)
+@router.get("/v1/audit", dependencies=[Depends(require_api_key)])
+def get_audit(limit: int = 50) -> dict:
+    events = [AuditEvent(**e).model_dump() for e in audit.list_events(limit=limit)]
+    return api_response(data={"events": events})
