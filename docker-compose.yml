@@ -1,0 +1,43 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: legal_doc_ai_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-legal_doc_ai}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: legal_doc_ai_api
+    env_file:
+      - .env
+    environment:
+      POSTGRES_HOST: db
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    command: uvicorn legal_doc_ai.main:app --host 0.0.0.0 --port 8000
+
+  ui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: legal_doc_ai_ui
+    env_file:
+      - .env
+    depends_on:
+      - api
+    ports:
+      - "8501:8501"
+    command: streamlit run streamlit_app.py --server.address=0.0.0.0 --server.port=8501
+
+volumes:
+  pgdata:

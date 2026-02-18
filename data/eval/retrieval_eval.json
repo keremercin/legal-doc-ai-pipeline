@@ -1,0 +1,27 @@
+[
+  {
+    "label": "confidentiality",
+    "text": "Mutual confidentiality clause: both parties must not disclose trade secrets for 24 months.",
+    "queries": ["trade secrets confidentiality", "non disclosure obligation"]
+  },
+  {
+    "label": "payment_terms",
+    "text": "Invoice #2026-14 payment terms: Net 30, amount due 15000 USD, late fee 2%.",
+    "queries": ["invoice net 30 amount due", "late fee payment terms"]
+  },
+  {
+    "label": "litigation",
+    "text": "Plaintiff filed a lawsuit in district court alleging breach of warranty and damages.",
+    "queries": ["plaintiff district court lawsuit", "breach of warranty damages claim"]
+  },
+  {
+    "label": "compliance",
+    "text": "GDPR and KVKK compliance policy requires consent logging and data retention controls.",
+    "queries": ["kvkk consent logging", "gdpr data retention policy"]
+  },
+  {
+    "label": "termination",
+    "text": "Termination clause allows either party to terminate with 30-day written notice.",
+    "queries": ["30 day written notice terminate", "termination clause either party"]
+  }
+]
