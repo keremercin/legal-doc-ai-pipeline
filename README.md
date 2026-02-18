@@ -22,6 +22,8 @@ This project turns that into an API-driven workflow:
 
 ![Legal UI Mock](docs/assets/legal_ui_mock.png)
 
+![Legal Demo GIF](docs/assets/legal_demo.gif)
+
 ---
 
 ## Core capabilities
