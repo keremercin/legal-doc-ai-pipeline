@@ -74,7 +74,7 @@ python -m pytest -q
 python scripts/eval_retrieval.py
 ```
 
-Latest local unit/API run: **25 tests passed**, with AI credentials disabled and the memory/rule configuration. Coverage includes extraction rejection before storage, source selection, invalid QA input, authentication, API envelopes and a memory-mode health check that does not require PostgreSQL.
+Latest local unit/API run: **28 tests passed**, with AI credentials disabled and the memory/rule configuration. Coverage includes extraction rejection before storage, source selection, invalid QA input, mocked provider-label validation and provider-failure fallback, authentication, API envelopes and a memory-mode health check that does not require PostgreSQL.
 
 The existing retrieval benchmark is a small synthetic fixture set (10 queries over five short texts), not a held-out real-document benchmark. Its score does not establish OCR quality, semantic retrieval quality, answer correctness or live provider reliability. A separate `scripts/eval_grounding.py` diagnostic adds direct matches, paraphrases, unrelated questions and an overlapping hard negative. The recorded result in `reports/grounding-diagnostic.json` is **7/12 cases passed**: all four paraphrases were missed and the encryption-algorithm question retrieved a privacy snippet that cannot answer it. These failures expose the lexical baseline's limits; they are not hidden or converted into claims of semantic accuracy. The five-document diagnostic is manually authored and still not a held-out real-document benchmark.
 
