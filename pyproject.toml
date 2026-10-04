@@ -51,3 +51,6 @@ src = ["src", "tests"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["fastapi.File", "fastapi.Depends"]

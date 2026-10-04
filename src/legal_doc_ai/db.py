@@ -1,7 +1,9 @@
+import logging
 from collections.abc import Generator
 
 from pgvector.psycopg import register_vector
 from sqlalchemy import create_engine, event, text
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, sessionmaker
 
 from legal_doc_ai.config import get_settings
@@ -15,9 +17,8 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, futu
 def connect(dbapi_connection, connection_record) -> None:  # pragma: no cover
     try:
         register_vector(dbapi_connection)
-    except Exception:
-        # Do not crash if pgvector registration fails in non-pg contexts
-        pass
+    except Exception:  # noqa: BLE001 - optional adapter registration boundary
+        logging.getLogger(__name__).warning("pgvector registration unavailable")
 
 
 def get_db() -> Generator[Session, None, None]:
@@ -38,7 +39,7 @@ def test_db_connection() -> bool:
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
         return True
-    except Exception:
+    except SQLAlchemyError:
         return False
 
 

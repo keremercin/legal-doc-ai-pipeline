@@ -6,9 +6,9 @@ Creates demo files, ingests them, runs retrieve/analyze/qa, and writes a markdow
 
 from __future__ import annotations
 
+import os
 from datetime import datetime, timezone
 from pathlib import Path
-import os
 
 import requests
 

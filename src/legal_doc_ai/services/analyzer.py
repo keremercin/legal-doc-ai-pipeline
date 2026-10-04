@@ -1,4 +1,4 @@
-from openai import OpenAI
+from openai import OpenAI, OpenAIError
 
 from legal_doc_ai.config import get_settings
 from legal_doc_ai.services.classifier import ClassifierService
@@ -44,8 +44,8 @@ class DocumentAnalyzer:
                     ],
                 )
                 return (resp.choices[0].message.content or "").strip()
-            except Exception:
-                pass
+            except (OpenAIError, IndexError, ValueError):
+                return " ".join(text.split())[:320]
 
         # fallback extractive mini-summary
         cleaned = " ".join(text.split())

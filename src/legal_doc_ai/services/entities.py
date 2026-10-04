@@ -4,10 +4,10 @@ import re
 class LegalEntityExtractor:
     """Lightweight regex-based extractor (v1 baseline)."""
 
-    DATE_PATTERNS = [
+    DATE_PATTERNS = (
         r"\b\d{1,2}[./-]\d{1,2}[./-]\d{2,4}\b",
         r"\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{1,2},\s+\d{4}\b",
-    ]
+    )
 
     def extract(self, text: str) -> dict:
         parties = self._extract_parties(text)

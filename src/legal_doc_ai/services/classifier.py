@@ -1,4 +1,4 @@
-from openai import OpenAI
+from openai import OpenAI, OpenAIError
 
 from legal_doc_ai.config import get_settings
 
@@ -8,7 +8,7 @@ settings = get_settings()
 class ClassifierService:
     """Legal doc classifier with rule + optional LLM mode."""
 
-    allowed_labels = {"contract", "invoice", "litigation", "compliance", "other"}
+    allowed_labels = frozenset({"contract", "invoice", "litigation", "compliance", "other"})
 
     def classify(self, text: str) -> str:
         mode = settings.classifier_mode.lower().strip()
@@ -54,5 +54,5 @@ class ClassifierService:
             if label not in self.allowed_labels:
                 return self._rule_classify(text)
             return label
-        except Exception:
+        except (OpenAIError, IndexError, ValueError):
             return self._rule_classify(text)

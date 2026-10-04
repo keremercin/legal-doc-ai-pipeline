@@ -13,15 +13,15 @@ from legal_doc_ai.core.schemas import (
     AuditEvent,
     ExtractRequest,
     QARequest,
-    RetrieveRequest,
     RetrievedChunk,
+    RetrieveRequest,
 )
 from legal_doc_ai.db import get_db, test_db_connection
 from legal_doc_ai.services.analyzer import DocumentAnalyzer
 from legal_doc_ai.services.audit import AuditService
 from legal_doc_ai.services.entities import LegalEntityExtractor
-from legal_doc_ai.services.qa import QAGenerator
 from legal_doc_ai.services.ocr import ExtractionError
+from legal_doc_ai.services.qa import QAGenerator
 from legal_doc_ai.services.vector_store import InMemoryVectorStore, PGVectorStore
 
 router = APIRouter()
