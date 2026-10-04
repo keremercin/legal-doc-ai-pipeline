@@ -4,7 +4,7 @@ from legal_doc_ai.config import get_settings
 from legal_doc_ai.services.chunker import simple_chunk
 from legal_doc_ai.services.classifier import ClassifierService
 from legal_doc_ai.services.entities import LegalEntityExtractor
-from legal_doc_ai.services.ocr import OCRService
+from legal_doc_ai.services.ocr import ExtractionError, OCRService
 from legal_doc_ai.services.vector_store import VectorStore
 
 settings = get_settings()
@@ -19,6 +19,8 @@ class DocumentPipeline:
 
     def ingest(self, file_path: Path) -> dict:
         text = self.ocr.extract_text(file_path)
+        if not text.strip():
+            raise ExtractionError("Document contains no extractable text")
         classification = self.classifier.classify(text)
         entities = self.entity_extractor.extract(text)
         chunks = simple_chunk(

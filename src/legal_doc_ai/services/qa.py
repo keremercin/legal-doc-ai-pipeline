@@ -1,3 +1,5 @@
+import math
+
 from openai import OpenAI
 
 from legal_doc_ai.config import get_settings
@@ -13,7 +15,12 @@ class QAGenerator:
         self.store = store
 
     def answer(self, question: str, top_k: int = 5) -> dict:
-        hits = self.store.search(question, top_k=top_k)
+        if not question.strip() or not 1 <= top_k <= 50:
+            raise ValueError("A non-empty question and top_k between 1 and 50 are required")
+        hits = [
+            hit for hit in self.store.search(question, top_k=top_k)
+            if math.isfinite(hit.score) and hit.score > 0 and hit.text.strip()
+        ]
 
         if not hits:
             return {
@@ -30,11 +37,12 @@ class QAGenerator:
                 "citations": [h.chunk_id for h in hits],
             }
 
-        fallback = self._answer_fallback(question, hits)
+        used_hits = hits[:3]
+        fallback = self._answer_fallback(question, used_hits)
         return {
             "question": question,
             "answer": fallback,
-            "citations": [h.chunk_id for h in hits],
+            "citations": [h.chunk_id for h in used_hits],
         }
 
     def _answer_with_llm(self, question: str, hits: list[RetrievedItem]) -> str:
@@ -63,7 +71,7 @@ class QAGenerator:
 
     def _answer_fallback(self, question: str, hits: list[RetrievedItem]) -> str:
         top = hits[:3]
-        bullets = "\n".join([f"- {h.text[:220]}" for h in top])
+        bullets = "\n".join([f"- [{h.chunk_id}] {h.text[:220]}" for h in top])
         return (
             f"Question: {question}\n\n"
             "Grounded snippets:\n"

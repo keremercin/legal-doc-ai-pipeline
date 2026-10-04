@@ -21,6 +21,7 @@ from legal_doc_ai.services.analyzer import DocumentAnalyzer
 from legal_doc_ai.services.audit import AuditService
 from legal_doc_ai.services.entities import LegalEntityExtractor
 from legal_doc_ai.services.qa import QAGenerator
+from legal_doc_ai.services.ocr import ExtractionError
 from legal_doc_ai.services.vector_store import InMemoryVectorStore, PGVectorStore
 
 router = APIRouter()
@@ -39,7 +40,7 @@ def _resolve_store(db: Session):
 
 @router.get("/health")
 def health() -> dict:
-    db_ok = test_db_connection()
+    db_ok = test_db_connection() if settings.retriever_backend == "pgvector" else False
     return api_response(
         data={
             "service": settings.app_name,
@@ -85,6 +86,9 @@ async def ingest_document(
             },
         )
         return api_response(data=result)
+    except ExtractionError as exc:
+        audit.log("ingest", "error", {"reason": "extraction_failed"})
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     finally:
         temp_path.unlink(missing_ok=True)
 

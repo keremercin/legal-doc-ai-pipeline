@@ -3,6 +3,7 @@ from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
+from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 
 from legal_doc_ai.api.response import APP_VERSION, api_response
@@ -38,7 +39,7 @@ async def validation_exception_handler(_: Request, exc: RequestValidationError):
         status_code=422,
         content=api_response(
             status="error",
-            error={"code": "VALIDATION_ERROR", "message": "Invalid request payload", "details": exc.errors()},
+            error={"code": "VALIDATION_ERROR", "message": "Invalid request payload", "details": jsonable_encoder(exc.errors(), custom_encoder={ValueError: str})},
         ),
     )
 

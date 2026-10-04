@@ -1,122 +1,90 @@
-# ⚖️ legal-doc-ai-pipeline
+# Legal Document Workbench
 
 [![CI](https://github.com/keremercin/legal-doc-ai-pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/keremercin/legal-doc-ai-pipeline/actions/workflows/ci.yml)
-![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
-![FastAPI](https://img.shields.io/badge/FastAPI-API-009688)
-![pgvector](https://img.shields.io/badge/PostgreSQL-pgvector-336791)
 
-Production-oriented Legal Document AI pipeline with OCR, retrieval, analysis, and grounded Q&A.
+A Python/FastAPI reference implementation for turning documents into searchable text, structured extraction and source-labelled answers.
 
-## Why this project exists
-Legal/ops teams spend too much time manually scanning files for obligations, payment terms, and risk signals.
+![Actual local application showing an extractive answer and its source ID](output/playwright/grounded-answer.png)
 
-This project turns that into an API-driven workflow:
-- ingest legal documents,
-- make them searchable,
-- analyze them with structured outputs,
-- answer questions with citations.
+## Implemented behavior
 
----
+- UTF-8 text, text-layer PDF and image OCR ingestion; unsupported or empty extraction is rejected before indexing.
+- Chunking, rule-based classification, regex entity extraction and heuristic risk flags.
+- In-memory storage for local demonstrations; optional PostgreSQL/pgvector backend.
+- Retrieval, extractive Q&A, optional provider-generated answers, API-key access control and an in-memory audit trail.
+- Relevant nonempty hits only for Q&A. Offline citations correspond to the snippets actually displayed.
 
-## Product view
+## Two distinct modes
 
-![Legal UI Mock](docs/assets/legal_ui_mock.png)
+| Mode | Retrieval | Answers | Requirements |
+| --- | --- | --- | --- |
+| Local | Lexical overlap; deterministic placeholder vectors are not semantic embeddings | Extractive source snippets | No AI credentials; memory backend |
+| Provider-enabled | Provider embeddings plus lexical score | Provider-generated response | Credentials, connectivity and separate live evaluation |
 
-![Legal Demo GIF](docs/assets/legal_demo.gif)
+A positive retrieval score is not proof that a chunk answers a question. Provider-mode citation IDs identify supplied context; individual claims are not independently verified. This project does not claim production legal accuracy.
 
----
-
-## Core capabilities
-
-- OCR/text extraction (`txt`, `pdf`, image)
-- Rule/LLM classification
-- Chunking + embeddings
-- Hybrid retrieval (dense + lexical)
-- Vector backend: `pgvector` or in-memory fallback
-- Entity extraction + risk flags + summary
-- Grounded Q&A (`/v1/qa`) with citations
-- Optional API-key auth + audit trail (`/v1/audit`)
-
----
-
-## API endpoints
-
-- `GET /health`
-- `POST /v1/ingest`
-- `POST /v1/retrieve`
-- `POST /v1/extract`
-- `POST /v1/analyze`
-- `POST /v1/qa`
-- `GET /v1/audit`
-
-Swagger: `http://localhost:8000/docs`
-
----
-
-## Quickstart
+## Run locally
 
 ```bash
-cp .env.example .env
 python -m venv .venv
-source .venv/bin/activate
-pip install -e .[dev]
-
-docker compose up -d db
-uvicorn legal_doc_ai.main:app --reload --host 0.0.0.0 --port 8000
+# Linux/macOS: source .venv/bin/activate
+# PowerShell: .venv\Scripts\Activate.ps1
+python -m pip install -e ".[dev]"
 ```
 
-Optional demo UI:
+Use `RETRIEVER_BACKEND=memory`, `CLASSIFIER_MODE=rule` and an empty `OPENAI_API_KEY` for the local path. Environment values override `.env` settings. Set `API_KEY` when restricting local API access.
+
 ```bash
-streamlit run streamlit_app.py
+python -m uvicorn legal_doc_ai.main:app --host 127.0.0.1 --port 8000
+# In a second terminal:
+python -m streamlit run streamlit_app.py
 ```
 
----
+Open API docs at http://localhost:8000/docs. The UI includes ingestion, retrieval, analysis, Q&A and audit tabs. Its retrieval/Q&A handlers unwrap the API response envelope. The updated Q&A tab was exercised in Chromium against a running local API with synthetic input; the screenshot shows its actual source-labelled answer. API ingestion and an unrelated query were also exercised; unrelated terms returned no context and no citations. This is a local smoke check, not complete browser coverage or live provider validation.
 
-## Quality & reliability
+## Architecture
 
-- Automated tests + lint
-- CI workflow (GitHub Actions)
-- Benchmark script (`scripts/eval_retrieval.py`)
-- Demo run report generator (`scripts/demo_walkthrough.py`)
-
----
-
-## Measurable output
-
-Current benchmark report includes:
-- Recall@1
-- Recall@3
-- MRR
-
-See: `reports/benchmark.md`
-
----
-
-## Repository structure
-
-```text
-src/legal_doc_ai/
-├─ api/
-├─ core/
-├─ services/
-├─ db.py
-├─ models.py
-└─ main.py
+```mermaid
+flowchart LR
+    File[TXT / text PDF / image] --> Extract[Extraction and validation]
+    Extract --> Classify[Classification and entities]
+    Extract --> Chunk[Overlapping chunks]
+    Chunk --> Store[Memory / optional pgvector]
+    Query[Question] --> Retrieve[Retrieval and relevance filtering]
+    Store --> Retrieve
+    Retrieve --> Answer[Extractive / optional provider answer]
+    Answer --> Sources[Answer and context IDs]
+    API[FastAPI access control] --> File
+    API --> Query
+    API --> Audit[In-memory audit ring]
 ```
 
----
+## API and examples
 
-## Documentation
+`POST /v1/ingest`, `/v1/retrieve`, `/v1/extract`, `/v1/analyze`, `/v1/qa`; `GET /health`, `/version`, `/v1/audit`.
 
-- Architecture: `docs/ARCHITECTURE.md`
-- Deployment: `docs/DEPLOYMENT.md`
-- Render deploy: `docs/DEPLOY_RENDER.md`
-- Case study: `docs/CASE_STUDY.md`
-- Release notes: `docs/RELEASE_NOTES_v0.4.0.md`
+Responses use `{status, data, meta, error}`. Protected routes accept `X-API-Key` when configured. An unsupported upload returns HTTP 422 with `error.message`. Empty uploads return HTTP 400. Files with no extracted content never become searchable diagnostic strings.
 
----
+For a synthetic text such as `Party A shall pay USD 5,000 within 15 days`, a payment query can return source snippets and chunk IDs. This illustrates extraction, not a client engagement or validated legal interpretation.
 
-## Hiring signal
+## Verification and evaluation
 
-This repo demonstrates end-to-end execution:
-**problem framing → backend architecture → measurable evaluation → deploy-ready delivery.**
+```bash
+python -m pytest -q
+python scripts/eval_retrieval.py
+```
+
+Latest local unit/API run: **25 tests passed**, with AI credentials disabled and the memory/rule configuration. Coverage includes extraction rejection before storage, source selection, invalid QA input, authentication, API envelopes and a memory-mode health check that does not require PostgreSQL.
+
+The existing retrieval benchmark is a small synthetic fixture set (10 queries over five short texts), not a held-out real-document benchmark. Its score does not establish OCR quality, semantic retrieval quality, answer correctness or live provider reliability. A separate `scripts/eval_grounding.py` diagnostic adds direct matches, paraphrases, unrelated questions and an overlapping hard negative. The recorded result in `reports/grounding-diagnostic.json` is **7/12 cases passed**: all four paraphrases were missed and the encryption-algorithm question retrieved a privacy snippet that cannot answer it. These failures expose the lexical baseline's limits; they are not hidden or converted into claims of semantic accuracy. The five-document diagnostic is manually authored and still not a held-out real-document benchmark.
+
+## Limits
+
+- Scanned PDFs need OCR preprocessing; image OCR requires a separately installed Tesseract executable.
+- The memory store and audit ring are not durable across restarts.
+- Provider outputs can contain unsupported claims. Citation presence is not claim verification.
+- PostgreSQL/provider integration and OCR quality have not been exercised in the current local test pass.
+- Regex entities and risk flags are heuristics, not a legal review system.
+- Upload/resource limits and production deployment operations need further hardening.
+
+Existing deployment notes and historical benchmark artifacts describe earlier configurations; validate against current code before using them for hosted operation.

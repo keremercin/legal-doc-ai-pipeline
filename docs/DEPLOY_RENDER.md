@@ -1,3 +1,5 @@
+> Historical planning/presentation note. Current behavior and verified evidence are in the root README. Local retrieval is lexical; provider/pgvector paths require separate validation. Citations identify context, not independently verified claims. Old deployment, experience and production wording must not be treated as current proof.
+
 # Deploy on Render (Docker)
 
 ## 1) Create Web Service

@@ -1,0 +1,191 @@
+{
+  "mode": "offline lexical, synthetic diagnostic",
+  "documents": {
+    "payment": "Payment obligations: the invoice amount is USD 5000, payable within fifteen days.",
+    "termination": "Termination requires thirty days of written notice before cancellation.",
+    "privacy": "Confidentiality obligations protect customer information and prohibit disclosure.",
+    "delivery": "Delivery of the monthly report is due on the first business day.",
+    "distractor": "A history of maritime shipping describes cargo vessels and trade routes."
+  },
+  "cases": [
+    {
+      "query": "payment invoice amount",
+      "category": "direct",
+      "expected": "payment",
+      "predicted": "payment",
+      "passed": true,
+      "scores": [
+        0.3333333333333333
+      ],
+      "answer": {
+        "question": "payment invoice amount",
+        "answer": "Question: payment invoice amount\n\nGrounded snippets:\n- [469c1b8d-ea2e-441a-ad07-da3613391750:0] Payment obligations: the invoice amount is USD 5000, payable within fifteen days.\n\n(LLM disabled, returned extractive answer from top retrieved chunks.)",
+        "citations": [
+          "469c1b8d-ea2e-441a-ad07-da3613391750:0"
+        ]
+      }
+    },
+    {
+      "query": "termination notice cancellation",
+      "category": "direct",
+      "expected": "termination",
+      "predicted": "termination",
+      "passed": true,
+      "scores": [
+        0.375
+      ],
+      "answer": {
+        "question": "termination notice cancellation",
+        "answer": "Question: termination notice cancellation\n\nGrounded snippets:\n- [b14fe5cc-7934-4e77-9dfc-1dfb559a3f6a:0] Termination requires thirty days of written notice before cancellation.\n\n(LLM disabled, returned extractive answer from top retrieved chunks.)",
+        "citations": [
+          "b14fe5cc-7934-4e77-9dfc-1dfb559a3f6a:0"
+        ]
+      }
+    },
+    {
+      "query": "confidentiality customer information",
+      "category": "direct",
+      "expected": "privacy",
+      "predicted": "privacy",
+      "passed": true,
+      "scores": [
+        0.42857142857142855
+      ],
+      "answer": {
+        "question": "confidentiality customer information",
+        "answer": "Question: confidentiality customer information\n\nGrounded snippets:\n- [33d73c78-6314-429a-bb3e-8e98eeafd1e7:0] Confidentiality obligations protect customer information and prohibit disclosure.\n\n(LLM disabled, returned extractive answer from top retrieved chunks.)",
+        "citations": [
+          "33d73c78-6314-429a-bb3e-8e98eeafd1e7:0"
+        ]
+      }
+    },
+    {
+      "query": "monthly report delivery",
+      "category": "direct",
+      "expected": "delivery",
+      "predicted": "delivery",
+      "passed": true,
+      "scores": [
+        0.42857142857142855
+      ],
+      "answer": {
+        "question": "monthly report delivery",
+        "answer": "Question: monthly report delivery\n\nGrounded snippets:\n- [4006d15e-80eb-40de-a2e8-ea010a153d0f:0] Delivery of the monthly report is due on the first business day.\n\n(LLM disabled, returned extractive answer from top retrieved chunks.)",
+        "citations": [
+          "4006d15e-80eb-40de-a2e8-ea010a153d0f:0"
+        ]
+      }
+    },
+    {
+      "query": "When must I remit the fee?",
+      "category": "paraphrase",
+      "expected": "payment",
+      "predicted": null,
+      "passed": false,
+      "scores": [],
+      "answer": {
+        "question": "When must I remit the fee?",
+        "answer": "No relevant context found in indexed documents.",
+        "citations": []
+      }
+    },
+    {
+      "query": "How can we end the relationship?",
+      "category": "paraphrase",
+      "expected": "termination",
+      "predicted": null,
+      "passed": false,
+      "scores": [],
+      "answer": {
+        "question": "How can we end the relationship?",
+        "answer": "No relevant context found in indexed documents.",
+        "citations": []
+      }
+    },
+    {
+      "query": "Are client records secret?",
+      "category": "paraphrase",
+      "expected": "privacy",
+      "predicted": null,
+      "passed": false,
+      "scores": [],
+      "answer": {
+        "question": "Are client records secret?",
+        "answer": "No relevant context found in indexed documents.",
+        "citations": []
+      }
+    },
+    {
+      "query": "When is the recurring document submitted?",
+      "category": "paraphrase",
+      "expected": "delivery",
+      "predicted": null,
+      "passed": false,
+      "scores": [],
+      "answer": {
+        "question": "When is the recurring document submitted?",
+        "answer": "No relevant context found in indexed documents.",
+        "citations": []
+      }
+    },
+    {
+      "query": "astronomy spaceship galaxies",
+      "category": "unanswerable",
+      "expected": null,
+      "predicted": null,
+      "passed": true,
+      "scores": [],
+      "answer": {
+        "question": "astronomy spaceship galaxies",
+        "answer": "No relevant context found in indexed documents.",
+        "citations": []
+      }
+    },
+    {
+      "query": "banana bread recipe",
+      "category": "unanswerable",
+      "expected": null,
+      "predicted": null,
+      "passed": true,
+      "scores": [],
+      "answer": {
+        "question": "banana bread recipe",
+        "answer": "No relevant context found in indexed documents.",
+        "citations": []
+      }
+    },
+    {
+      "query": "tax withholding percentage",
+      "category": "unanswerable",
+      "expected": null,
+      "predicted": null,
+      "passed": true,
+      "scores": [],
+      "answer": {
+        "question": "tax withholding percentage",
+        "answer": "No relevant context found in indexed documents.",
+        "citations": []
+      }
+    },
+    {
+      "query": "customer information encryption algorithm",
+      "category": "hard_negative",
+      "expected": null,
+      "predicted": "privacy",
+      "passed": false,
+      "scores": [
+        0.2222222222222222
+      ],
+      "answer": {
+        "question": "customer information encryption algorithm",
+        "answer": "Question: customer information encryption algorithm\n\nGrounded snippets:\n- [33d73c78-6314-429a-bb3e-8e98eeafd1e7:0] Confidentiality obligations protect customer information and prohibit disclosure.\n\n(LLM disabled, returned extractive answer from top retrieved chunks.)",
+        "citations": [
+          "33d73c78-6314-429a-bb3e-8e98eeafd1e7:0"
+        ]
+      }
+    }
+  ],
+  "passed": 7,
+  "total": 12,
+  "limitations": "Manually authored tiny diagnostic, not held-out customer benchmark. Positive overlap can admit unsupported questions; paraphrases can be missed."
+}

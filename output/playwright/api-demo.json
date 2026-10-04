@@ -1,0 +1,55 @@
+{
+  "notice": "Synthetic agreement, real local API, provider disabled; lexical matching requires shared words",
+  "ingest": {
+    "status": "ok",
+    "data": {
+      "document_id": "bf1d1b13-c2e3-43ab-9a89-0d42c3f6779f",
+      "filename": "tmphviv9qdb.txt",
+      "classification": "contract",
+      "chunk_count": 1,
+      "metadata": {
+        "chars": 143,
+        "backend": "memory",
+        "entities": {
+          "parties": 1,
+          "dates": 0,
+          "amounts": 1,
+          "obligations": 1
+        }
+      }
+    },
+    "meta": {
+      "model_version": "0.5.0",
+      "latency_ms": 0
+    },
+    "error": null
+  },
+  "qa": {
+    "status": "ok",
+    "data": {
+      "question": "What are the payment obligations and deadlines?",
+      "answer": "Question: What are the payment obligations and deadlines?\n\nGrounded snippets:\n- [bf1d1b13-c2e3-43ab-9a89-0d42c3f6779f:0] Synthetic agreement. Payment obligations: Party A shall pay USD 5,000 within 15 days. Both parties must keep customer information confidential.\n\n(LLM disabled, returned extractive answer from top retrieved chunks.)",
+      "citations": [
+        "bf1d1b13-c2e3-43ab-9a89-0d42c3f6779f:0"
+      ]
+    },
+    "meta": {
+      "model_version": "0.5.0",
+      "latency_ms": 0
+    },
+    "error": null
+  },
+  "no_context": {
+    "status": "ok",
+    "data": {
+      "question": "astronomy spaceship galaxies",
+      "answer": "No relevant context found in indexed documents.",
+      "citations": []
+    },
+    "meta": {
+      "model_version": "0.5.0",
+      "latency_ms": 0
+    },
+    "error": null
+  }
+}

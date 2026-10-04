@@ -1,8 +1,10 @@
-import requests
+import httpx as requests
 import streamlit as st
 
 st.set_page_config(page_title="Legal Doc AI Demo", layout="wide")
-st.title("⚖️ Legal Doc AI Pipeline Demo")
+st.title("Legal Document Workbench")
+st.caption("Document ingestion · searchable evidence · source-labelled answers · audit trail")
+st.info("Without provider credentials, retrieval is lexical and answers are extractive snippets. Scanned PDFs require OCR preprocessing. This demo is not legal advice or a measured production service.")
 
 api_base = st.sidebar.text_input("API Base URL", value="http://localhost:8000")
 api_key = st.sidebar.text_input("API Key (optional)", value="", type="password")
@@ -14,7 +16,7 @@ def headers() -> dict:
 
 if st.sidebar.button("Check Health"):
     r = requests.get(f"{api_base}/health", timeout=10, headers=headers())
-    if r.ok:
+    if r.is_success:
         st.sidebar.success("API reachable")
         st.sidebar.json(r.json())
     else:
@@ -31,7 +33,7 @@ with ingest_tab:
     if uploaded is not None and st.button("Ingest"):
         files = {"file": (uploaded.name, uploaded.getvalue(), uploaded.type or "application/octet-stream")}
         r = requests.post(f"{api_base}/v1/ingest", files=files, timeout=60, headers=headers())
-        if r.ok:
+        if r.is_success:
             st.success("Ingest complete")
             st.json(r.json())
         else:
@@ -49,8 +51,8 @@ with retrieve_tab:
             timeout=30,
             headers=headers(),
         )
-        if r.ok:
-            data = r.json()
+        if r.is_success:
+            data = r.json()["data"]
             if not data["results"]:
                 st.info("No results yet. Try ingesting docs first.")
             for i, item in enumerate(data["results"], start=1):
@@ -79,7 +81,7 @@ with analyze_tab:
             timeout=45,
             headers=headers(),
         )
-        if r.ok:
+        if r.is_success:
             st.json(r.json())
         else:
             st.error(r.text)
@@ -100,8 +102,8 @@ with qa_tab:
             timeout=45,
             headers=headers(),
         )
-        if r.ok:
-            data = r.json()
+        if r.is_success:
+            data = r.json()["data"]
             st.markdown("**Answer**")
             st.write(data["answer"])
             st.markdown("**Citations**")
@@ -114,7 +116,7 @@ with audit_tab:
     limit = st.slider("Event limit", min_value=5, max_value=100, value=20)
     if st.button("Load Audit Events"):
         r = requests.get(f"{api_base}/v1/audit", params={"limit": limit}, timeout=30, headers=headers())
-        if r.ok:
+        if r.is_success:
             st.json(r.json())
         else:
             st.error(r.text)

@@ -13,3 +13,14 @@ def test_health() -> None:
     assert "service" in body["data"]
     assert "meta" in body
     assert body["error"] is None
+
+
+def test_memory_health_never_contacts_postgres(monkeypatch):
+    from legal_doc_ai.api import routes
+    monkeypatch.setattr(routes.settings, 'retriever_backend', 'memory')
+    def unexpected_connection():
+        raise AssertionError('Memory health must not require PostgreSQL')
+    monkeypatch.setattr(routes, 'test_db_connection', unexpected_connection)
+    response = TestClient(app).get('/health')
+    assert response.status_code == 200
+    assert response.json()['data']['db_connected'] is False

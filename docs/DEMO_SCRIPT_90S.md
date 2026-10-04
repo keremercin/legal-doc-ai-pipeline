@@ -1,46 +1,11 @@
-# 90-Second Demo Script (Portfolio)
+# Current local demonstration
 
-## Goal
-Show hiring managers this is production-minded AI engineering, not prompt glue.
+Use the root README to install and start the API in memory/rule mode with provider credentials disabled. Start `streamlit_app.py`.
 
-## Recording setup
-- Start services: `docker compose up -d --build`
-- Open API docs: `http://localhost:8000/docs`
-- Open UI: `http://localhost:8501`
+1. Ingest a synthetic TXT containing `Payment obligations: Party A shall pay USD 5,000 within 15 days`.
+2. Ask a question sharing the words payment/obligations; show the extractive snippet and its chunk ID.
+3. Ask `astronomy spaceship galaxies`; show no context/no citations.
+4. Explain that paraphrases may be missed and overlapping words can retrieve insufficient evidence. The grounding diagnostic records these failures.
+5. Show the audit view and extraction errors for unsupported/empty input.
 
-## Timeline (90s)
-
-### 0s–10s — Intro
-"This is a legal document AI pipeline. It ingests legal files, indexes them with pgvector, and supports retrieval, analysis, and grounded Q&A."
-
-### 10s–30s — Ingest
-- In Streamlit `Ingest` tab, upload `demo_contract.txt`
-- Click **Ingest**
-- Show response: classification, chunk_count, metadata
-
-Say: "We parse and classify first, then index chunks for semantic retrieval."
-
-### 30s–50s — Retrieve
-- Go to `Retrieve` tab
-- Query: `payment obligations and deadlines`
-- Show top chunks + scores
-
-Say: "Search is hybrid: vector relevance plus lexical boost for robustness."
-
-### 50s–70s — Analyze
-- Go to `Analyze Text`
-- Paste legal paragraph
-- Click **Analyze**
-- Show `classification`, `entities`, `risk_flags`
-
-Say: "This endpoint provides structured legal signals for downstream automation."
-
-### 70s–90s — Grounded Q&A
-- Go to `Grounded Q&A`
-- Ask: `What must Party A pay and by when?`
-- Show answer + citations
-
-Say: "Answers are grounded in retrieved chunks with citations for traceability."
-
-## End line
-"This project is API-first, tested, benchmarked, and deployment-ready — built for real client delivery."
+Actual screenshot: `output/playwright/grounded-answer.png`. API example: `output/playwright/api-demo.json`. This screenshot verifies local Q&A, not all browser flows or live AI quality.
