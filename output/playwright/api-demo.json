@@ -19,8 +19,8 @@
       }
     },
     "meta": {
-      "model_version": "0.5.0",
-      "latency_ms": 0
+      "app_version": "0.5.0",
+      "latency_ms": null
     },
     "error": null
   },
@@ -34,8 +34,8 @@
       ]
     },
     "meta": {
-      "model_version": "0.5.0",
-      "latency_ms": 0
+      "app_version": "0.5.0",
+      "latency_ms": null
     },
     "error": null
   },
@@ -47,8 +47,8 @@
       "citations": []
     },
     "meta": {
-      "model_version": "0.5.0",
-      "latency_ms": 0
+      "app_version": "0.5.0",
+      "latency_ms": null
     },
     "error": null
   }

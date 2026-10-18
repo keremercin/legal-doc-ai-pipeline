@@ -48,7 +48,7 @@ def write_report(metrics: dict[str, float], details: list[dict], total_queries: 
     metrics_payload = {
         "schema_version": "1.0",
         "project": "legal-doc-ai-pipeline",
-        "model_version": APP_VERSION,
+        "app_version": APP_VERSION,
         "generated_at": ts,
         "dataset": {
             "path": "data/eval/retrieval_eval.json",

@@ -1,31 +1,27 @@
-> Historical planning/presentation note. Current behavior and verified evidence are in the root README. Local retrieval is lexical; provider/pgvector paths require separate validation. Citations identify context, not independently verified claims. Old deployment, experience and production wording must not be treated as current proof.
+> Current scope note: this is a local portfolio demo. It is not a client case study or a validated legal-review system.
 
-# Case Study — Legal Document AI Pipeline
+# Local Legal Document Pipeline Demo
 
 ## Problem
 
-Legal and operations teams waste significant time reading PDFs, invoices, and agreements to locate obligations, payment terms, and litigation context.
+The repository demonstrates document ingestion, extraction, classification, local retrieval, and an API/Streamlit interface.
 
 ## Goal
 
-Build a practical AI pipeline that can:
+The current implementation can:
 
 1. ingest heterogeneous legal files,
-2. make them searchable with semantic retrieval,
+2. make them searchable with lexical retrieval in the default local configuration,
 3. expose fast API endpoints for downstream automation.
 
 ## Approach
 
 - **Ingestion:** OCR + text extraction for `txt/pdf/image`
 - **Understanding:** classification + entity extraction + risk-flag baseline
-- **Search:** embeddings + vector indexing (`pgvector`) + hybrid lexical boost
+- **Search:** lexical retrieval is the local default; provider and pgvector paths need separate validation
 - **Delivery:** FastAPI + Streamlit demo + benchmark reporting
 
-## Outcome
-
-- End-to-end ingest/retrieve/analyze workflow running locally
-- API surface suitable for integration into automation pipelines
-- Benchmark output report (`reports/benchmark.md`) for iterative quality tracking
+The built-in retrieval benchmark uses a small synthetic fixture set. It does not establish OCR quality, answer correctness, semantic retrieval quality, live provider reliability, or business outcomes. Returned source chunks identify context but do not independently validate claims.
 
 ## Next Improvements
 
