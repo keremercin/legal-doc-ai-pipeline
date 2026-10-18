@@ -1,3 +1,6 @@
+import runpy
+from pathlib import Path
+
 from fastapi.testclient import TestClient
 
 from legal_doc_ai.main import app
@@ -18,7 +21,8 @@ def test_version() -> None:
 def test_retrieval_report_records_application_version_not_model_version(tmp_path, monkeypatch) -> None:
     import json
 
-    from scripts.eval_retrieval import write_report
+    script_path = Path(__file__).parents[1] / "scripts" / "eval_retrieval.py"
+    write_report = runpy.run_path(str(script_path))["write_report"]
 
     monkeypatch.chdir(tmp_path)
     write_report({"recall_at_1": 0.5, "recall_at_3": 0.8, "mrr": 0.6}, [], total_queries=2)
